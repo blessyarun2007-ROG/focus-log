@@ -1,21 +1,11 @@
-# Focus Log
-
-Focus Log is a simple productivity app that helps users track their focus time
-and improve daily concentration.
-
-## Features
-- Start and stop focus sessions
-- Log focus duration
-- View daily focus summary
-
-## Core Screens
-- Home / Dashboard
-- Focus Timer Screen
-- Focus Log History
-
 ## Tech Stack
-- Frontend: (to be decided)
-- Backend: (to be decided)
+- Frontend: HTML, CSS, JavaScript
+- Backend: None (LocalStorage based)
 
-## Status
-Day 1 – Spec & foundation completed.
+## Authentication
+- Simple login & signup using LocalStorage
+- User must log in to access dashboard
+
+## Deployment
+- Static app
+- Can be deployed using GitHub Pages or Vercel
