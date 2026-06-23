@@ -1,0 +1,15 @@
+{
+  "name": "focus-log",
+  "version": "1.0.0",
+  "description": "Focus Log app with authentication and CRUD using JSON Server",
+  "main": "index.js",
+  "scripts": {
+    "start": "json-server --watch db.json --port 3000",
+    "dev": "json-server --watch db.json --port 3000"
+  },
+  "author": "Blessy",
+  "license": "ISC",
+  "dependencies": {
+    "json-server": "^0.17.4"
+  }
+}
