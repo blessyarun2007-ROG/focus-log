@@ -1,19 +1,21 @@
 # Focus Log
 
-## Description
-Focus Log is a productivity app that helps users track focus time and daily work progress.
+Focus Log is a simple productivity app that helps users track their focus time
+and improve daily concentration.
 
 ## Features
-- Focus session tracking
-- Daily productivity log
-- Simple dashboard
+- Start and stop focus sessions
+- Log focus duration
+- View daily focus summary
 
 ## Core Screens
-- Home
-- Focus Timer
-- Daily Summary
+- Home / Dashboard
+- Focus Timer Screen
+- Focus Log History
 
 ## Tech Stack
-- HTML
-- CSS
-- JavaScript
+- Frontend: (to be decided)
+- Backend: (to be decided)
+
+## Status
+Day 1 – Spec & foundation completed.
