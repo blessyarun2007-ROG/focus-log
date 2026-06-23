@@ -12,9 +12,19 @@ function showTasks() {
   list.innerHTML = "";
   tasks.forEach((t, i) => {
     list.innerHTML += `<li>${t}
+      <button onclick="editTask(${i})">✏️</button>
       <button onclick="deleteTask(${i})">❌</button>
     </li>`;
   });
+}
+
+function editTask(index) {
+  const newTask = prompt("Edit task:", tasks[index]);
+  if (newTask) {
+    tasks[index] = newTask;
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+    showTasks();
+  }
 }
 
 function deleteTask(index) {
