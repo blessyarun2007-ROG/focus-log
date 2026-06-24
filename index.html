@@ -2,16 +2,32 @@
 <html>
 <head>
   <title>Focus Log</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>Focus Log</h2>
+  <main>
+    <h2>Focus Log</h2>
 
-  <input id="task" placeholder="Enter focus task">
-  <button onclick="addTask()">Add</button>
+    <section class="task-box">
+      <input id="task" placeholder="Enter focus task">
+      <button onclick="addTask()">Add</button>
 
-  <ul id="list"></ul>
+      <ul id="list"></ul>
+    </section>
 
-  <button onclick="logout()">Logout</button>
+    <section class="chat-box">
+      <h3>AI Chatbot</h3>
+
+      <div id="chatHistory" class="chat-history"></div>
+
+      <div class="chat-input-row">
+        <input id="chatInput" placeholder="Ask the AI something">
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </section>
+
+    <button onclick="logout()">Logout</button>
+  </main>
 
   <script src="script.js"></script>
 </body>
