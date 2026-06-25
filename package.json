@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "json-server --watch db.json --port 3000",
+    "start": "node ai.js",
     "ai": "node ai.js"
   },
   "dependencies": {

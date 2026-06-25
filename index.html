@@ -1,32 +1,120 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Focus Log</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main>
-    <h2>Focus Log</h2>
+  <div class="floating-bg" aria-hidden="true">
+    <span class="float-icon icon-1">AI</span>
+    <span class="float-icon icon-2">25</span>
+    <span class="float-icon icon-3">OK</span>
+    <span class="float-icon icon-4">GO</span>
+    <span class="float-icon icon-5">+</span>
+    <span class="float-icon icon-6">✓</span>
+    <span class="float-icon icon-7">01</span>
+    <span class="float-icon icon-8">></span>
+  </div>
 
-    <section class="task-box">
-      <input id="task" placeholder="Enter focus task">
-      <button onclick="addTask()">Add</button>
-
-      <ul id="list"></ul>
-    </section>
-
-    <section class="chat-box">
-      <h3>AI Chatbot</h3>
-
-      <div id="chatHistory" class="chat-history"></div>
-
-      <div class="chat-input-row">
-        <input id="chatInput" placeholder="Ask the AI something">
-        <button onclick="sendMessage()">Send</button>
+  <main class="app-shell">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Productivity tracker</p>
+        <h1>Focus Log</h1>
       </div>
+      <button class="secondary-button" onclick="logout()">Logout</button>
+    </header>
+
+    <section class="dashboard-grid">
+      <section class="panel session-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Current session</p>
+            <h2>Start a focused block</h2>
+          </div>
+          <div id="timerDisplay" class="timer-display">00:00</div>
+        </div>
+
+        <label for="taskName">Task name</label>
+        <input id="taskName" placeholder="Example: Study JavaScript closures" autocomplete="off">
+
+        <div class="button-row">
+          <button id="startButton" type="button">Start</button>
+          <button id="stopButton" class="danger-button" type="button" disabled>Stop and save</button>
+        </div>
+
+        <p id="sessionStatus" class="status-text">No active session.</p>
+      </section>
+
+      <section class="panel stats-panel">
+        <p class="eyebrow">Progress</p>
+        <div class="stats-grid">
+          <div>
+            <strong id="totalSessions">0</strong>
+            <span>Sessions</span>
+          </div>
+          <div>
+            <strong id="totalMinutes">0</strong>
+            <span>Minutes</span>
+          </div>
+          <div>
+            <strong id="averageMinutes">0</strong>
+            <span>Avg min</span>
+          </div>
+        </div>
+        <p id="patternSummary" class="pattern-summary">Log a session to reveal your productivity patterns.</p>
+      </section>
     </section>
 
-    <button onclick="logout()">Logout</button>
+    <section class="content-grid">
+      <section class="panel logs-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">History</p>
+            <h2>Past focus logs</h2>
+          </div>
+          <button id="refreshLogsButton" class="secondary-button" type="button">Refresh</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>Duration</th>
+                <th>Date and time</th>
+              </tr>
+            </thead>
+            <tbody id="focusLogsTable">
+              <tr>
+                <td colspan="3">Loading focus logs...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel chat-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">AI coach</p>
+            <h2>Productivity chatbot</h2>
+          </div>
+        </div>
+
+        <div id="chatHistory" class="chat-history" aria-live="polite">
+          <div class="chat-message ai">AI: Hi! Ask me for focus tips, a study plan, or patterns from your sessions.</div>
+        </div>
+
+        <form id="chatForm" class="chat-input-row">
+          <input id="chatInput" placeholder="Ask: Create a study plan for today" autocomplete="off">
+          <button id="sendButton" type="submit">Send</button>
+        </form>
+        <p id="chatStatus" class="status-text"></p>
+      </section>
+    </section>
   </main>
 
   <script src="script.js"></script>

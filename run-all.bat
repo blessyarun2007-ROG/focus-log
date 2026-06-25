@@ -28,19 +28,15 @@ if not exist ".env" (
   exit /b 1
 )
 
-echo Starting JSON Server on http://localhost:3000
-start "Focus Log JSON Server" cmd /k "cd /d ""%~dp0"" && npm.cmd start"
-
-echo Starting AI backend on http://localhost:3001
-start "Focus Log AI Backend" cmd /k "cd /d ""%~dp0"" && npm.cmd run ai"
+echo Starting Focus Log backend on http://localhost:3001
+start "Focus Log Backend" cmd /k "cd /d ""%~dp0"" && npm.cmd start"
 
 echo Opening frontend...
 start "" "%~dp0index.html"
 
 echo.
 echo Everything is starting.
-echo JSON Server: http://localhost:3000
-echo AI Backend:  http://localhost:3001
-echo Frontend:    %~dp0index.html
+echo Backend:  http://localhost:3001
+echo Frontend: %~dp0index.html
 echo.
 pause

@@ -4,5 +4,15 @@
       "title": "study",
       "id": 1
     }
+  ],
+  "focusLogs": [
+    {
+      "id": "43df669b-296b-40e6-b1aa-a523e06def36",
+      "taskName": "study",
+      "durationMinutes": 1,
+      "startedAt": "2026-06-25T15:37:25.509Z",
+      "endedAt": "2026-06-25T15:37:29.015Z",
+      "createdAt": "2026-06-25T15:37:29.040Z"
+    }
   ]
 }
