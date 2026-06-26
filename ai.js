@@ -8,7 +8,11 @@ import OpenAI from "openai";
 const app = express();
 const port = process.env.PORT || 3001;
 const groqModel = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
+const maxPromptLength = 1000;
+const rateLimitWindowMs = 60 * 1000;
+const maxChatRequestsPerWindow = 20;
 const dbFile = new URL("./db.json", import.meta.url);
+const chatRateLimits = new Map();
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -126,6 +130,20 @@ function normalizeChatHistory(history) {
     .filter(item => item.content);
 }
 
+function isRateLimited(ipAddress) {
+  const now = Date.now();
+  const key = ipAddress || "unknown";
+  const current = chatRateLimits.get(key);
+
+  if (!current || now - current.startedAt > rateLimitWindowMs) {
+    chatRateLimits.set(key, { count: 1, startedAt: now });
+    return false;
+  }
+
+  current.count += 1;
+  return current.count > maxChatRequestsPerWindow;
+}
+
 app.get("/", (req, res) => {
   res.send("Focus Log AI backend is running. Use GET /focus, POST /focus, or POST /chat");
 });
@@ -181,11 +199,25 @@ app.post("/focus", async (req, res) => {
 // Send the user's message and recent productivity context to Groq.
 app.post("/chat", async (req, res) => {
   try {
-    const { message, history } = req.body;
-    const cleanMessage = String(message || "").trim();
+    const { message, prompt, history } = req.body;
+    const rawPrompt = message ?? prompt;
+
+    if (rawPrompt === undefined || rawPrompt === null) {
+      return res.status(400).json({ error: "Prompt is required" });
+    }
+
+    const cleanMessage = String(rawPrompt).trim();
 
     if (!cleanMessage) {
-      return res.status(400).json({ error: "Message is required." });
+      return res.status(400).json({ error: "Prompt cannot be empty" });
+    }
+
+    if (cleanMessage.length > maxPromptLength) {
+      return res.status(400).json({ error: "Prompt too long" });
+    }
+
+    if (isRateLimited(req.ip)) {
+      return res.status(429).json({ error: "Too many requests. Please try again later." });
     }
 
     const db = await readDatabase();
@@ -193,11 +225,7 @@ app.post("/chat", async (req, res) => {
     const chatHistory = normalizeChatHistory(history);
 
     if (!groq) {
-      return res.json({
-        reply: buildFallbackReply(cleanMessage, db.focusLogs),
-        source: "fallback",
-        warning: "Add GROQ_API_KEY to .env to enable Groq replies.",
-      });
+      return res.status(503).json({ error: "AI service unavailable." });
     }
 
     const completion = await groq.chat.completions.create({
@@ -227,12 +255,7 @@ app.post("/chat", async (req, res) => {
   } catch (error) {
     console.error("Groq API error:", error.message);
 
-    const db = await readDatabase();
-    res.json({
-      reply: buildFallbackReply(String(req.body?.message || ""), db.focusLogs),
-      source: "fallback",
-      warning: "Groq is currently unreachable from the backend.",
-    });
+    res.status(500).json({ error: "AI service unavailable." });
   }
 });
 
