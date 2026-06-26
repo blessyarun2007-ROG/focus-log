@@ -28,3 +28,14 @@ The frontend sends chat messages to `POST http://localhost:3001/chat`. The backe
 
 ## Deployment
 - Deploy the frontend and Express backend together, or point `API_BASE_URL` in `script.js` at your hosted backend.
+# Focus Log
+
+A productivity tracker with an AI assistant to help users stay focused and manage study/work sessions.
+
+
+## 📦 Installation
+
+```bash
+npm install
+npm run dev
+```
