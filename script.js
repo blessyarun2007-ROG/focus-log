@@ -1,7 +1,10 @@
-const API_BASE_URL = "http://localhost:3001";
+const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+  ? "http://localhost:3001"
+  : "";
 const FOCUS_URL = `${API_BASE_URL}/focus`;
 const CHAT_URL = `${API_BASE_URL}/chat`;
 const DAILY_FOCUS_GOAL_MINUTES = 150;
+const LOCAL_FOCUS_LOGS_KEY = "focusLogs";
 
 let focusLogs = [];
 let filteredRange = "all";
@@ -66,6 +69,49 @@ async function requestJson(url, options = {}) {
   }
 
   return data;
+}
+
+function loadLocalFocusLogs() {
+  try {
+    const savedLogs = JSON.parse(localStorage.getItem(LOCAL_FOCUS_LOGS_KEY) || "[]");
+    return Array.isArray(savedLogs) ? savedLogs : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalFocusLog(log) {
+  const savedLogs = loadLocalFocusLogs();
+  const focusLog = {
+    id: globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : String(Date.now()),
+    ...log,
+    createdAt: new Date().toISOString(),
+  };
+
+  savedLogs.push(focusLog);
+  localStorage.setItem(LOCAL_FOCUS_LOGS_KEY, JSON.stringify(savedLogs));
+
+  return focusLog;
+}
+
+function buildLocalChatReply(message) {
+  const lowerMessage = message.toLowerCase();
+  const totalMinutes = focusLogs.reduce((sum, log) => sum + Number(log.durationMinutes || 0), 0);
+  const averageMinutes = focusLogs.length ? Math.round(totalMinutes / focusLogs.length) : 25;
+
+  if (lowerMessage.includes("plan")) {
+    return "Try this: choose one main task, work for 25 minutes, take a 5 minute break, then repeat twice. End by writing what you finished.";
+  }
+
+  if (lowerMessage.includes("tip") || lowerMessage.includes("focus")) {
+    return "Start with one specific task, remove one distraction, and keep a tiny parking list for thoughts that try to pull you away.";
+  }
+
+  if (focusLogs.length) {
+    return `You have logged ${focusLogs.length} session(s) and ${totalMinutes} total minute(s). A good next block is about ${Math.max(15, averageMinutes)} minutes on one clear task.`;
+  }
+
+  return "Start one 25 minute session with a specific task name. Once you have a few logs, I can help spot your focus patterns.";
 }
 
 function formatTimer(totalSeconds) {
@@ -436,9 +482,20 @@ async function stopFocusSession() {
     updateTimer();
     await loadFocusLogs();
   } catch (error) {
-    elements.pauseButton.disabled = false;
-    elements.stopButton.disabled = false;
-    elements.sessionStatus.textContent = `${error.message} Make sure the backend is running on http://localhost:3001.`;
+    saveLocalFocusLog({
+      taskName: sessionToSave.taskName,
+      durationMinutes: elapsedMinutes,
+      startedAt: sessionToSave.startedAt,
+      endedAt,
+    });
+
+    activeSession = null;
+    elements.activeTaskTitle.textContent = "Ready when you are";
+    elements.targetBadge.textContent = "No target";
+    elements.timerCard.classList.remove("is-running");
+    elements.sessionStatus.textContent = "Session saved in this browser.";
+    updateTimer();
+    await loadFocusLogs();
   }
 }
 
@@ -535,13 +592,28 @@ async function loadFocusLogs() {
     renderFocusLogs();
     updateStats();
   } catch (error) {
-    setSessionListMessage(`${error.message} Start the backend on http://localhost:3001.`);
+    focusLogs = loadLocalFocusLogs().sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt));
+    renderFocusLogs();
+    updateStats();
   }
 }
 
 function logout() {
   localStorage.removeItem("user");
-  window.location.href = "login.html";
+  window.location.href = "/login";
+}
+
+function login() {
+  const usernameInput = document.getElementById("username");
+  const username = usernameInput ? usernameInput.value.trim() : "";
+
+  if (!username) {
+    usernameInput?.focus();
+    return;
+  }
+
+  localStorage.setItem("user", username);
+  window.location.href = "/";
 }
 
 function addChatMessage(sender, text) {
@@ -621,55 +693,63 @@ async function sendMessage(messageOverride) {
     addChatMessage("ai", reply);
     rememberChatMessage("assistant", reply);
   } catch (error) {
+    const reply = buildLocalChatReply(userMessage);
     typingMessage.remove();
-    addChatMessage("ai", `Chat request failed: ${error.message}`);
+    addChatMessage("ai", reply);
+    rememberChatMessage("assistant", reply);
   } finally {
     setChatLoading(false);
     elements.chatInput.focus();
   }
 }
 
-elements.navTabs.forEach(tab => {
-  tab.addEventListener("click", () => switchTab(tab.dataset.tab));
-});
-
-elements.jumpTabs.forEach(button => {
-  button.addEventListener("click", () => switchTab(button.dataset.jumpTab));
-});
-
-elements.openSessionButtons.forEach(button => {
-  button.addEventListener("click", openSessionModal);
-});
-
-elements.closeSessionModal.addEventListener("click", closeSessionModal);
-elements.focusForm.addEventListener("submit", startFocusSession);
-elements.durationOptions.forEach(option => {
-  option.addEventListener("change", updateCustomDurationState);
-});
-
-elements.pauseButton.addEventListener("click", togglePauseSession);
-elements.stopButton.addEventListener("click", stopFocusSession);
-elements.refreshLogsButton.addEventListener("click", loadFocusLogs);
-
-elements.filterTabs.forEach(tab => {
-  tab.addEventListener("click", () => {
-    filteredRange = tab.dataset.filter;
-    elements.filterTabs.forEach(item => item.classList.toggle("active", item === tab));
-    renderFocusLogs();
+function initDashboard() {
+  elements.navTabs.forEach(tab => {
+    tab.addEventListener("click", () => switchTab(tab.dataset.tab));
   });
-});
 
-elements.promptChips.forEach(chip => {
-  chip.addEventListener("click", () => {
-    switchTab("assistant");
-    sendMessage(chip.textContent);
+  elements.jumpTabs.forEach(button => {
+    button.addEventListener("click", () => switchTab(button.dataset.jumpTab));
   });
-});
 
-elements.chatForm.addEventListener("submit", event => {
-  event.preventDefault();
-  sendMessage();
-});
+  elements.openSessionButtons.forEach(button => {
+    button.addEventListener("click", openSessionModal);
+  });
 
-initMouseTrailer();
-loadFocusLogs();
+  elements.closeSessionModal.addEventListener("click", closeSessionModal);
+  elements.focusForm.addEventListener("submit", startFocusSession);
+  elements.durationOptions.forEach(option => {
+    option.addEventListener("change", updateCustomDurationState);
+  });
+
+  elements.pauseButton.addEventListener("click", togglePauseSession);
+  elements.stopButton.addEventListener("click", stopFocusSession);
+  elements.refreshLogsButton.addEventListener("click", loadFocusLogs);
+
+  elements.filterTabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      filteredRange = tab.dataset.filter;
+      elements.filterTabs.forEach(item => item.classList.toggle("active", item === tab));
+      renderFocusLogs();
+    });
+  });
+
+  elements.promptChips.forEach(chip => {
+    chip.addEventListener("click", () => {
+      switchTab("assistant");
+      sendMessage(chip.textContent);
+    });
+  });
+
+  elements.chatForm.addEventListener("submit", event => {
+    event.preventDefault();
+    sendMessage();
+  });
+
+  initMouseTrailer();
+  loadFocusLogs();
+}
+
+if (elements.focusForm) {
+  initDashboard();
+}
