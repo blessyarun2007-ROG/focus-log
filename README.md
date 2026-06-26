@@ -32,6 +32,24 @@ The frontend sends chat messages to `POST http://localhost:3001/chat`. The backe
 
 A productivity tracker with an AI assistant to help users stay focused and manage study/work sessions.
 
+## 🚀 Live Demo
+
+focus-log1-2lgjin3f9-blessyarun2007-5791s-projects.vercel.app
+## ✨ Features
+
+- Focus Timer
+- Session History
+- AI Assistant
+- Productivity Dashboard
+- Dark Modern UI
+
+## 🛠️ Tech Stack
+
+- Next.js
+- TypeScript
+- Tailwind CSS
+- Supabase
+- OpenAI
 
 ## 📦 Installation
 
